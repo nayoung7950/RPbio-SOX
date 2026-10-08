@@ -16,7 +16,7 @@ src, stamp = pathlib.Path(sys.argv[1]), sys.argv[2]
 # 거래처명·금액·전표번호·담당자 실명·상세 사유는 원본(Claude 현황판)에만 둔다.
 PUBLIC_FIELDS = {
     "pbc": {"cid", "cname", "dept", "due", "no", "period", "req", "reqDate",
-            "round", "status", "updated", "checkResult", "checkReason"},
+            "round", "status", "updated", "checkResult", "checkReason", "who"},
     "samples": {"cid", "cname", "round", "due", "ev", "status", "updated",
                 "checkResult", "checkReason"},
 }
