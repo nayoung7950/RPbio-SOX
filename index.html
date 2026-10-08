@@ -191,9 +191,9 @@
   tr.grp td{ background:var(--surface); font-size:13px; letter-spacing:.04em; }
   .ro-badge{ display:inline-block; margin:8px 0 0; font-size:12px; color:var(--accent); background:var(--accent-soft); padding:2px 10px; border-radius:2px; }
   #intake-panel, #btn-mail, #btn-xlsx, #mail-box, button[data-del], .confirm{ display:none !important; }
-  #ctl-table select, #ctl-table input{ pointer-events:none; border-color:transparent; background:transparent; }
-  #ctl-table select{ -webkit-appearance:none; appearance:none; }
-  #ctl-table input[value=""]{ visibility:hidden; }
+  #ctl-table select, #ctl-table input, #pop-table select, #pop-table input{ pointer-events:none; border-color:transparent; background:transparent; }
+  #ctl-table select, #pop-table select{ -webkit-appearance:none; appearance:none; }
+  #ctl-table input[value=""], #pop-table input[value=""]{ visibility:hidden; }
 </style>
 
 <div class="wrap">
@@ -252,6 +252,22 @@
         <div class="legend"><span><span class="dot" style="background:var(--good)"></span>완료</span><span><span class="dot" style="background:var(--critical)"></span>누락·불일치·추가요청</span><span><span class="dot" style="background:var(--idle-bg);box-shadow:inset 0 0 0 1px var(--rule)"></span>미완료</span></div>
       </section>
     </div>
+
+    <section class="panel" id="pop-panel">
+      <h2>모집단 요청 <span class="hint" id="pop-hint">샘플은 모집단 제출 후 감사인이 선정 · 담당자에게 먼저 요청</span></h2>
+      <div class="toolbar">
+        <label class="note" style="display:flex;gap:5px;align-items:center" for="pop-open"><input type="checkbox" id="pop-open" checked> 제출완료 제외</label>
+        <button class="btn" id="btn-pop-copy">요청 목록 복사</button>
+        <span class="note" id="pop-copy-msg" role="status"></span>
+      </div>
+      <div class="table-wrap">
+        <table id="pop-table">
+          <thead><tr><th>번호</th><th>통제</th><th>모집단 자료</th><th>기간</th><th>요청 부서</th><th>상태</th><th>비고</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="empty" id="pop-empty" hidden>모집단 요청이 없습니다.</div>
+      </div>
+    </section>
 
     <section class="panel">
       <h2>통제별 진행 <span class="hint" id="ctl-hint">행을 펼쳐 상세 보기</span></h2>
@@ -524,7 +540,7 @@ function fillCycles(){
 }
 function renderAll(){
   var stats=controlStats();
-  renderKpis(stats); renderPeople(stats); renderDepts(stats); renderFiltersOn(); fillRounds(); fillCycles(); renderTable(stats);
+  renderKpis(stats); renderPeople(stats); renderDepts(stats); renderFiltersOn(); fillRounds(); fillCycles(); renderTable(stats); renderPop();
 }
 
 /* ---------------- table interactions ---------------- */
@@ -542,7 +558,7 @@ tbody.addEventListener("click", function(e){
   open[row.dataset.k]=!open[row.dataset.k]; renderAll();
 });
 tbody.addEventListener("keydown", function(e){ var row=e.target.closest&&e.target.closest("tr.ctl"); if(row && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); open[row.dataset.k]=!open[row.dataset.k]; renderAll(); } });
-tbody.addEventListener("change", function(e){
+function onTblChange(e){
   var t=e.target, tr=t.closest("tr[data-id]"); if(!tr||!t.dataset.f) return;
   var isItem=tr.dataset.col==="pbc", col=isItem?itemsCol:samplesCol; if(!col) return;
   var id=tr.dataset.id, patch={updated:new Date().toISOString()};
@@ -560,7 +576,37 @@ tbody.addEventListener("change", function(e){
   setSave("저장 중…");
   col.doc(id).update(patch).then(function(){ setSave("저장됨 · "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})); renderAll(); },
     function(err){ setSave("저장하지 못했습니다("+(err&&err.code||"오류")+"). 편집 권한을 확인해 주세요.",true); });
-});
+}
+tbody.addEventListener("change", onTblChange);
+document.querySelector("#pop-table tbody").addEventListener("change", onTblChange);
+
+/* ---------------- 모집단 요청 ---------------- */
+function isPop(r){ return /모집단/.test(String(r.req||"")); }
+function popList(){
+  var onlyOpen=$("pop-open").checked;
+  return items.filter(inRound).filter(isPop).filter(function(r){ return !onlyOpen || r.status!=="제출완료"; })
+    .sort(function(a,b){ return noKey(a.no).localeCompare(noKey(b.no)); });
+}
+function popReq(r){ return String(r.req||"").replace(/^\s*\(모집단\)\s*/,""); }
+function renderPop(){
+  var list=popList(), tb=document.querySelector("#pop-table tbody"), em=$("pop-empty");
+  var all=items.filter(inRound).filter(isPop), done=all.filter(function(r){return r.status==="제출완료";}).length;
+  $("pop-hint").textContent = all.length ? ("총 "+all.length+"건 · 제출완료 "+done+"건 · 샘플은 모집단 제출 후 감사인이 선정") : "샘플은 모집단 제출 후 감사인이 선정 · 담당자에게 먼저 요청";
+  if(!list.length){ tb.innerHTML=""; em.hidden=false; em.textContent = all.length ? "남은 모집단 요청이 없습니다." : "모집단 요청이 없습니다."; return; }
+  em.hidden=true;
+  tb.innerHTML=list.map(function(r){
+    var m=rcm(r.cid), ppl=m?m.ppl:[];
+    return '<tr data-col="pbc" data-id="'+esc(r.id)+'"><td class="mono">'+esc(r.no)+'</td><td style="min-width:160px"><span class="mono">'+esc(r.cid||"–")+'</span><br><span class="note">'+esc((m&&m.name)||r.cname||"")+'</span></td><td style="min-width:200px">'+esc(popReq(r))+'</td><td class="note" style="white-space:nowrap">'+esc(r.period||"")+'</td><td>'+(r.dept?esc(r.dept):(ppl.length?pplHtml(ppl):'<span class="note">미지정</span>'))+'</td><td>'+selHtml("p-st-"+r.id, ITEM_ST, r.status, "status")+'</td><td><input type="text" id="p-file-'+esc(r.id)+'" data-f="file" value="'+esc(r.file||"")+'" placeholder="비고" aria-label="비고"></td></tr>';
+  }).join("");
+}
+$("pop-open").onchange=function(){ renderPop(); };
+$("btn-pop-copy").onclick=function(){
+  var list=popList();
+  var txt=list.map(function(r){ var m=rcm(r.cid); return r.no+"\t"+(r.cid||"")+" "+((m&&m.name)||r.cname||"")+"\t"+popReq(r)+"\t"+(r.period||"")+"\t"+(r.dept||(m?pplText(m.ppl):"")); }).join("\n");
+  var head="번호\t통제\t모집단 자료\t기간\t요청 부서\n";
+  function done(ok){ $("pop-copy-msg").textContent= ok ? (list.length+"건을 복사했습니다. 메일이나 엑셀에 붙여넣으세요.") : "복사하지 못했습니다. 표를 직접 선택해 복사해 주세요."; }
+  try{ navigator.clipboard.writeText(head+txt).then(function(){ done(true); }, function(){ done(false); }); }catch(e){ done(false); }
+};
 $("f-round").onchange=function(){ filt.round=this.value; renderAll(); };
 $("f-site").onchange=function(){ filt.site=this.value; renderAll(); };
 $("f-cycle").onchange=function(){ filt.cycle=this.value; renderAll(); };
@@ -975,7 +1021,7 @@ renderAll();
   outboxCol.onSnapshot(function(snap){ outbox=snap.docs.map(function(d){ var x=Object.assign({},d.data()); x.id=d.id; return x; }); var ae=document.activeElement; if(!$("mail-box").hidden && !(ae && ae.closest && ae.closest("#mail-box") && ae.tagName==="INPUT")) renderMails(); }, function(){});
   var got={i:false,s:false};
   function after(){ if(got.i&&got.s) dbReady=true;
-    var ae=document.activeElement; if(ae && ae.closest && ae.closest("#ctl-table") && (ae.tagName==="INPUT")) return; renderAll(); }
+    var ae=document.activeElement; if(ae && ae.closest && (ae.closest("#ctl-table")||ae.closest("#pop-table")) && (ae.tagName==="INPUT")) return; renderAll(); }
   itemsCol.onSnapshot(function(snap){
     items=snap.docs.map(function(d){ var x=Object.assign({},d.data()); x.id=d.id; if(ITEM_ST.indexOf(x.status)<0) x.status="미요청"; return x; }); got.i=true; after();
   }, function(err){ setSave("목록 연결이 끊겼습니다("+(err&&err.code||"오류")+"). 새로고침해 주세요.",true); });
