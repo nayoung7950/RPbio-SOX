@@ -439,7 +439,7 @@ function renderPeople(stats){
     var x=pp[k], p=person(k), pc=Math.round(x.done/x.total*100);
     return '<button class="prow" data-k="'+esc(k)+'" aria-pressed="'+(filt.person===k)+'"><span class="nm">'+(p?esc(p.names)+' <span class="ds"><span style="color:'+SITE_VAR[p.site]+'">'+esc(p.site)+'</span> · '+esc(p.dept)+'</span>':'담당자 미지정')+'</span>'+barHtml(x.done,x.issues,x.total)+'<span class="pc">'+pc+'% · '+x.done+'/'+x.total+'</span><span class="is">'+(x.issues?'이슈 '+x.issues:'')+'</span></button>';
   }).join("");
-  el.querySelectorAll(".prow").forEach(function(b){ b.onclick=function(){ var k=b.dataset.k; if(k==="_none") return; filt.person = filt.person===k?"":k; filt.dept=""; renderAll(); }; });
+  el.querySelectorAll(".prow").forEach(function(b){ b.onclick=function(){ var k=b.dataset.k; if(k==="_none") return; filt.person = filt.person===k?"":k; filt.dept=""; renderAll(); goCtl(); }; });
 }
 function renderDepts(stats){
   var dd={};
@@ -459,8 +459,9 @@ function renderDepts(stats){
     });
   });
   el.innerHTML = html.length?html.join(""):'<div class="empty">표시할 부서가 없습니다.</div>';
-  el.querySelectorAll(".prow").forEach(function(b){ b.onclick=function(){ var k=b.dataset.d; filt.dept=filt.dept===k?"":k; filt.person=""; renderAll(); }; });
+  el.querySelectorAll(".prow").forEach(function(b){ b.onclick=function(){ var k=b.dataset.d; filt.dept=filt.dept===k?"":k; filt.person=""; renderAll(); goCtl(); }; });
 }
+function goCtl(){ if(!(filt.person||filt.dept)) return; var sec=$("ctl-table").closest("section"); var rm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches; try{ sec.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"}); }catch(e){ sec.scrollIntoView(); } }
 function renderFiltersOn(){
   var parts=[];
   if(filt.person){ var p=person(filt.person); parts.push('담당자: '+esc(p?p.names:filt.person)); }
@@ -589,6 +590,7 @@ function popList(){
 }
 function popReq(r){ return String(r.req||"").replace(/^\s*\(모집단\)\s*/,""); }
 function renderPop(){
+  var focusOn=!!(filt.person||filt.dept); $("pop-panel").hidden=focusOn; if(focusOn) return;
   var list=popList(), tb=document.querySelector("#pop-table tbody"), em=$("pop-empty");
   var all=items.filter(inRound).filter(isPop), done=all.filter(function(r){return r.status==="제출완료";}).length;
   $("pop-hint").textContent = all.length ? ("총 "+all.length+"건 · 제출완료 "+done+"건 · 샘플은 모집단 제출 후 감사인이 선정") : "샘플은 모집단 제출 후 감사인이 선정 · 담당자에게 먼저 요청";
