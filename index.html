@@ -205,6 +205,20 @@
 :is(#sv-panel,#sv-modal) .sv-meta b{ color:var(--ink); font-weight:600; }
 :is(#sv-panel,#sv-modal) .sv-req{ font-size:13px; color:var(--ink); background:var(--accent-soft); border-left:3px solid var(--accent); padding:6px 10px; border-radius:2px; }
 :is(#sv-panel,#sv-modal) .sv-prog{ font-size:12px; color:var(--ink-muted); }
+/* ---- 샘플 그룹 접기/펼치기 ---- */
+:is(#sv-panel,#sv-modal) details.sv-group{ margin:0 0 10px; }
+:is(#sv-panel,#sv-modal) details.sv-group>summary{ cursor:pointer; list-style:none; }
+:is(#sv-panel,#sv-modal) details.sv-group>summary::-webkit-details-marker{ display:none; }
+:is(#sv-panel,#sv-modal) details.sv-group>summary:hover{ background:var(--accent-soft); }
+:is(#sv-panel,#sv-modal) details.sv-group>summary:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+:is(#sv-panel,#sv-modal) details.sv-group:not([open])>summary{ border-bottom:0; }
+:is(#sv-panel,#sv-modal) .sv-car{ display:inline-block; width:14px; color:var(--accent); transition:transform .15s; }
+:is(#sv-panel,#sv-modal) details[open] .sv-car{ transform:rotate(90deg); }
+:is(#sv-panel,#sv-modal) .sv-tog{ color:var(--accent); font-weight:600; }
+:is(#sv-panel,#sv-modal) .sv-tog::after{ content:"눌러서 증빙 보기 ▾"; }
+:is(#sv-panel,#sv-modal) details[open] .sv-tog::after{ content:"접기 ▴"; }
+@media (prefers-reduced-motion:reduce){ :is(#sv-panel,#sv-modal) .sv-car{ transition:none; } }
+
 :is(#sv-panel,#sv-modal) .sv-wrap{ overflow:auto; max-height:560px; }
 :is(#sv-panel,#sv-modal) table.sv{ border-collapse:separate; border-spacing:0; width:100%; font-size:12.5px; }
 :is(#sv-panel,#sv-modal) table.sv th{ position:sticky; top:0; z-index:1; background:var(--surface); color:var(--ink); font-weight:600; text-align:left; white-space:nowrap; padding:7px 9px; border-bottom:1px solid var(--rule-strong); }
@@ -726,7 +740,9 @@ function renderSv(){
   body.innerHTML = vis.length ? vis.map(function(g){ return svGroupHtml(g, onlyOpen); }).join("") : '<div class="empty">선택한 조건에 해당하는 샘플이 없습니다.</div>';
   $("sv-count").textContent="샘플 "+nS+"건 · 회신 필요 "+nOpen+"건";
 }
-function svGroupHtml(g, onlyOpen){
+var SV_OPEN={};
+document.addEventListener("toggle", function(e){ var d=e.target; if(d&&d.dataset&&d.dataset.svk) SV_OPEN[d.dataset.svk]=d.open; }, true);
+function svGroupHtml(g, onlyOpen, forceOpen){
     var rows=g.rows.filter(function(r){ return !onlyOpen || r.cells.some(function(st){ return st && st!=="수취"; }); });
     var tot=0, done=0; g.rows.forEach(function(r){ r.cells.forEach(function(st){ if(st){ tot++; if(st==="수취") done++; } }); });
     var sh=g.sheet||{h:[],v:[],num:[]}, numIdx=sh.num||[];
@@ -735,14 +751,15 @@ function svGroupHtml(g, onlyOpen){
       return '<tr><td class="no">'+esc(r.s.sample)+'</td>'+v.map(function(x,i){ var isN=numIdx.indexOf(i)>-1, hd=String(sh.h[i]||""); var cls=isN?"n":(/번호|일$|코드/.test(hd)?"w":(String(x).length>18?"t":"w")); return '<td class="'+cls+'">'+esc(x)+'</td>'; }).join("")+
         r.cells.map(function(st){ return '<td class="w">'+(st?'<span class="sv-st '+svStClass(st)+'">'+esc(st==="미수취"?"회신 필요":st)+'</span>':'<span class="note">–</span>')+'</td>'; }).join("")+'</tr>'; }).join("");
     var cids=g.ctls.map(function(c){ return c.cid; });
-    return '<div class="sv-group">'+
-      '<div class="sv-head"><div class="sv-title">'+g.ctls.map(function(c,i){ return '<span class="mono">'+esc(c.cid)+'</span>'+esc(g.names[i]); }).join('<span class="note"> · </span>')+'</div>'+
+    var svk=cids.join("|"), isOpen=(svk in SV_OPEN)?SV_OPEN[svk]:!!forceOpen;
+    return '<details class="sv-group" data-svk="'+esc(svk)+'"'+(isOpen?' open':'')+'>'+
+      '<summary class="sv-head"><div class="sv-title"><span class="sv-car" aria-hidden="true">▸</span>'+g.ctls.map(function(c,i){ return '<span class="mono">'+esc(c.cid)+'</span>'+esc(g.names[i]); }).join('<span class="note"> · </span>')+'</div>'+
       '<div class="sv-meta">담당 <b>'+esc(pplText(g.ppl)||"-")+'</b>'+(g.pop?' · 모집단 <b>'+esc((g.popDesc||"")+" "+Number(g.pop).toLocaleString("ko-KR")+"건")+'</b> 중 샘플 <b>'+g.rows.length+'건</b>':' · 샘플 <b>'+g.rows.length+'건</b>')+'</div>'+
       '<div class="sv-req">요청 증빙: '+g.reqs.map(esc).join(" / ")+'</div>'+
-      '<div class="sv-prog">증빙 '+tot+'건 중 수취 '+done+'건'+(tot-done?' · <span style="color:var(--critical)">회신 필요 '+(tot-done)+'건</span>':' · 완료')+'</div></div>'+
+      '<div class="sv-prog">증빙 '+tot+'건 중 수취 '+done+'건'+(tot-done?' · <span style="color:var(--critical)">회신 필요 '+(tot-done)+'건</span>':' · 완료')+' · <span class="sv-tog"></span></div></summary>'+
       '<div style="padding:12px 14px 0">'+g.ctls.map(function(c){ return svRuleHtml(c.cid, g.rows[0]&&g.rows[0].s.sample); }).join("")+'</div>'+
       '<div class="sv-wrap"><table class="sv"><thead>'+head+'</thead><tbody>'+(bodyRows||'<tr><td colspan="99" class="note">회신 필요한 샘플이 없습니다.</td></tr>')+'</tbody></table></div>'+
-      '</div>';
+      '</details>';
 }
 $("sv-cyc").onchange=function(){ renderSv(); };
 $("sv-open").onchange=function(){ renderSv(); };
@@ -769,7 +786,7 @@ function openSvModal(k){
   $("svm-title").textContent=(p?p.names:"")+" · 샘플 증빙 요청";
   $("svm-sub").textContent=(p?p.site+" "+p.dept+" · ":"")+"증빙 "+st.total+"건 중 수취 "+st.done+"건"+(st.total-st.done?" · 회신 필요 "+(st.total-st.done)+"건":" · 완료");
   $("svm-body").innerHTML='<div class="guide">감사인이 선정한 샘플입니다. 표 오른쪽 <b>회신 필요</b> 증빙을 아래 방법으로 보내 주세요. 회계팀 확인 후 <b>수취</b>로 바뀝니다.</div>'+svRuleHtml("")+
-    (gs.length? gs.map(function(g){ return svGroupHtml(g, $("svm-open").checked); }).join("") : '<div class="empty">요청된 샘플이 없습니다.</div>');
+    (gs.length? gs.map(function(g){ return svGroupHtml(g, $("svm-open").checked, gs.length===1); }).join("") : '<div class="empty">요청된 샘플이 없습니다.</div>');
   m.hidden=false; m.dataset.k=k; document.body.style.overflow="hidden";
   setTimeout(function(){ try{ $("svm-close").focus(); }catch(e){} }, 0);
 }
