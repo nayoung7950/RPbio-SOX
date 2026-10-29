@@ -13,15 +13,16 @@ html_path = root / "index.html"
 src, stamp = pathlib.Path(sys.argv[1]), sys.argv[2]
 
 # 공개 저장소 노출 원칙(2026-10-07): 상태·짧은 사유 유형만 게시.
-# 거래처명·금액·전표번호·담당자 실명·상세 사유는 원본(Claude 현황판)에만 둔다.
+# pbc: 상세 사유·담당자 실명은 원본에만. samples: 2026-10-29부터 시트 공개(사용자 결정).
 PUBLIC_FIELDS = {
     "pbc": {"cid", "cname", "dept", "due", "no", "period", "req", "reqDate",
             "round", "status", "updated", "checkResult", "checkReason"},
+    # 2026-10-29 사용자 결정: 현업 증빙 요청용으로 샘플 시트(거래처·금액·전표번호) 공개. 비고(note)는 비공개.
     "samples": {"cid", "cname", "round", "due", "ev", "status", "updated",
-                "checkResult", "checkReason"},
+                "checkResult", "checkReason", "sample", "amount", "date", "desc",
+                "sheet", "req", "pop", "popDesc"},
 }
-MASK = {"samples": {"sample": lambda i: f"샘플{i:02d}", "amount": lambda i: "",
-                    "date": lambda i: "", "desc": lambda i: "", "note": lambda i: ""}}
+MASK = {}
 
 
 def sanitize(col, docs):
@@ -33,7 +34,7 @@ def sanitize(col, docs):
         clean = {k: v for k, v in d["data"].items() if k in allow}
         for k, fn in MASK.get(col, {}).items():
             clean[k] = fn(i)
-        out.append({"id": f"s{i:03d}" if col == "samples" else d["id"], "data": clean})
+        out.append({"id": d["id"], "data": clean})
     return out
 
 
