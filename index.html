@@ -238,6 +238,11 @@
 #sv-modal .guide{ font-size:13px; line-height:1.7; background:var(--card); border:1px solid var(--rule); border-radius:4px; padding:10px 14px; margin:0 0 16px; }
 #sv-modal .guide b{ color:var(--accent); }
 #sv-modal .sv-wrap{ max-height:none; }
+.sv-rule{ font-size:13px; line-height:1.75; background:var(--card); border:1px solid var(--accent); border-left-width:4px; border-radius:4px; padding:10px 14px; margin:0 0 14px; color:var(--ink); }
+.sv-rule b{ color:var(--accent); }
+.sv-rule code{ font-family:ui-monospace,Menlo,Consolas,monospace; background:var(--accent-soft); color:var(--ink); padding:0 5px; border-radius:2px; white-space:nowrap; }
+.sv-rule ol{ margin:4px 0 0; padding-left:20px; }
+
 
 </style>
 
@@ -315,7 +320,7 @@
     </section>
 
     <section class="panel" id="sv-panel" hidden>
-      <h2>샘플 증빙 요청 <span class="hint" id="sv-hint">감사인이 선정한 샘플 · 표의 증빙을 통제번호 폴더에 올려 주세요</span></h2>
+      <h2>샘플 증빙 요청 <span class="hint" id="sv-hint">감사인이 선정한 샘플 · 통제번호_샘플번호_증빙번호로 압축 회신</span></h2>
       <div class="sv-bar">
         <select id="sv-cyc" aria-label="사이클"><option value="">전체 사이클</option></select>
         <label class="note" style="display:flex;gap:5px;align-items:center" for="sv-open"><input type="checkbox" id="sv-open"> 회신 필요 샘플만</label>
@@ -534,6 +539,7 @@ function selHtml(id, list, cur, field){
 }
 function detailHtml(c){
   var h=['<div class="det-grid det">'];
+  if(c.samples.length) h.push(svRuleHtml(c.cid, c.samples.slice().sort(function(a,b){ return sKey(a.sample).localeCompare(sKey(b.sample)); })[0].sample));
   if(c.m) h.push('<div><p class="det-h">RCM 필요 증빙</p><div class="ev">'+esc(c.m.docs||"–")+'</div>'+(c.m.note?'<div class="warn" style="margin-top:4px">담당자 확인 필요 · '+esc(c.m.note)+'</div>':'')+'</div>');
   if(c.items.length){
     h.push('<div><p class="det-h">요청자료 '+c.items.length+'건</p><div class="table-wrap"><table><thead><tr><th>번호</th><th>요청자료</th><th>차수</th><th>상태</th><th>기한</th><th>파일명 / 비고</th><th></th></tr></thead><tbody>');
@@ -545,7 +551,7 @@ function detailHtml(c){
   }
   if(c.samples.length){
     var evNames=[]; c.samples.forEach(function(s){ (s.ev||[]).forEach(function(e){ if(evNames.indexOf(e.name)<0) evNames.push(e.name); }); });
-    h.push('<div><p class="det-h">샘플 '+c.samples.length+'건</p><div class="table-wrap"><table><thead><tr><th>샘플</th><th class="num">금액</th><th>내용</th>'+evNames.map(function(n){return '<th>'+esc(n)+'</th>';}).join("")+'<th>비고</th><th></th></tr></thead><tbody>');
+    h.push('<div><p class="det-h">샘플 '+c.samples.length+'건</p><div class="table-wrap"><table><thead><tr><th>샘플</th><th class="num">금액</th><th>내용</th>'+evNames.map(function(n){return '<th>'+esc(evLabel(c.cid,n))+'</th>';}).join("")+'<th>비고</th><th></th></tr></thead><tbody>');
     c.samples.slice().sort(function(a,b){ return sKey(a.sample).localeCompare(sKey(b.sample)); }).forEach(function(s){
       h.push('<tr data-col="samples" data-id="'+esc(s.id)+'"><td class="mono">'+esc(s.sample)+'</td><td class="num">'+won(s.amount)+'</td><td class="note">'+esc([s.date,s.desc].filter(Boolean).join(" · "))+'</td>'+
         evNames.map(function(n,i){ var e=(s.ev||[]).find(function(x){return x.name===n;}); return '<td>'+(e?selHtml("s-ev-"+s.id+"-"+i, EV_ST, e.st, "ev:"+n):'<span class="note">–</span>')+'</td>'; }).join("")+
@@ -662,6 +668,21 @@ $("pop-open").onchange=function(){ renderPop(); };
 
 /* ---------------- 샘플 증빙 요청 (시트형) ---------------- */
 var SV_CYC_NAME={RE:"매출관리",CO:"생산및재고",PU:"구매관리",TR:"자금관리",FR:"재무보고",TX:"세무관리",FA:"고정자산관리",HR:"인사관리",RD:"연구개발",IT:"전산",EL:"전사"};
+
+/* ---- 증빙번호(①②) · 회신 규칙 ---- */
+var CIRC="①②③④⑤⑥⑦⑧⑨⑩";
+function evNo(cid, name){ var s=samples.find(function(x){ return x.cid===cid && (x.ev||[]).some(function(e){return e.name===name;}); }); if(!s) return 0; var i=-1; s.ev.forEach(function(e,j){ if(e.name===name) i=j; }); return i+1; }
+function evNoCount(cid){ var s=samples.find(function(x){ return x.cid===cid; }); return s?(s.ev||[]).length:0; }
+function evLabel(cid, name){ var n=evNo(cid,name); return (n?CIRC.charAt(n-1)+" ":"")+name; }
+function svExample(cid, smp){ var n=evNoCount(cid); return cid+"_"+(smp||"01")+(n>1?"_1":"")+".pdf"; }
+function svRuleHtml(cid, smp){
+  var ex=cid?svExample(cid, smp):"C-RE-30-02-01_05_2.pdf";
+  var evs=""; if(cid){ var s=samples.find(function(x){ return x.cid===cid; }); if(s&&s.ev&&s.ev.length) evs=s.ev.map(function(e,i){ return CIRC.charAt(i)+" "+esc(e.name); }).join(" · "); }
+  return '<div class="sv-rule"><b>샘플 증빙 회신 방법</b> — 통제번호별로 구분해 압축 회신'+(evs?'<br>증빙번호: '+evs:'')+
+    '<ol><li><b>폴더</b>: 통제번호 <code>'+esc(cid||"C-RE-30-02-01")+'</code></li>'+
+    '<li><b>파일명</b>: <code>통제번호_샘플번호_증빙번호</code> (예: <code>'+esc(ex)+'</code>)'+(cid&&evNoCount(cid)<=1?' · 증빙이 1종이라 증빙번호 생략 가능':' · 증빙 1종이면 증빙번호 생략 가능')+' · 여러 장이면 뒤에 <code>_01</code>, <code>_02</code></li>'+
+    '<li>폴더 전체를 <b>압축(zip)</b>해 요청 메일에 회신</li></ol></div>';
+}
 function svSig(list){ return list.map(function(s){ return s.sample+"|"+((s.sheet&&s.sheet.v)||[]).join("¦"); }).sort().join("\n"); }
 function svStClass(st){ return st==="수취"?"ok":(st==="미수취"?"no":"ng"); }
 function svGroups(){
@@ -709,7 +730,7 @@ function svGroupHtml(g, onlyOpen){
     var rows=g.rows.filter(function(r){ return !onlyOpen || r.cells.some(function(st){ return st && st!=="수취"; }); });
     var tot=0, done=0; g.rows.forEach(function(r){ r.cells.forEach(function(st){ if(st){ tot++; if(st==="수취") done++; } }); });
     var sh=g.sheet||{h:[],v:[],num:[]}, numIdx=sh.num||[];
-    var head='<tr><th>샘플</th>'+sh.h.map(function(h){ return '<th>'+esc(h)+'</th>'; }).join("")+g.evCols.map(function(ec){ return '<th class="ev" title="'+esc(ec.cid)+'">'+esc(ec.name)+(g.ctls.length>1?'<br><span style="font-weight:400;font-size:11px">'+esc(ec.cid.replace(/^C-/,""))+'</span>':'')+'</th>'; }).join("")+'</tr>';
+    var head='<tr><th>샘플</th>'+sh.h.map(function(h){ return '<th>'+esc(h)+'</th>'; }).join("")+g.evCols.map(function(ec){ return '<th class="ev" title="'+esc(ec.cid)+'">'+esc(evLabel(ec.cid, ec.name))+(g.ctls.length>1?'<br><span style="font-weight:400;font-size:11px">'+esc(ec.cid.replace(/^C-/,""))+'</span>':'')+'</th>'; }).join("")+'</tr>';
     var bodyRows=rows.map(function(r){ var v=(r.s.sheet&&r.s.sheet.v)||[];
       return '<tr><td class="no">'+esc(r.s.sample)+'</td>'+v.map(function(x,i){ var isN=numIdx.indexOf(i)>-1, hd=String(sh.h[i]||""); var cls=isN?"n":(/번호|일$|코드/.test(hd)?"w":(String(x).length>18?"t":"w")); return '<td class="'+cls+'">'+esc(x)+'</td>'; }).join("")+
         r.cells.map(function(st){ return '<td class="w">'+(st?'<span class="sv-st '+svStClass(st)+'">'+esc(st==="미수취"?"회신 필요":st)+'</span>':'<span class="note">–</span>')+'</td>'; }).join("")+'</tr>'; }).join("");
@@ -719,8 +740,9 @@ function svGroupHtml(g, onlyOpen){
       '<div class="sv-meta">담당 <b>'+esc(pplText(g.ppl)||"-")+'</b>'+(g.pop?' · 모집단 <b>'+esc((g.popDesc||"")+" "+Number(g.pop).toLocaleString("ko-KR")+"건")+'</b> 중 샘플 <b>'+g.rows.length+'건</b>':' · 샘플 <b>'+g.rows.length+'건</b>')+'</div>'+
       '<div class="sv-req">요청 증빙: '+g.reqs.map(esc).join(" / ")+'</div>'+
       '<div class="sv-prog">증빙 '+tot+'건 중 수취 '+done+'건'+(tot-done?' · <span style="color:var(--critical)">회신 필요 '+(tot-done)+'건</span>':' · 완료')+'</div></div>'+
+      '<div style="padding:12px 14px 0">'+g.ctls.map(function(c){ return svRuleHtml(c.cid, g.rows[0]&&g.rows[0].s.sample); }).join("")+'</div>'+
       '<div class="sv-wrap"><table class="sv"><thead>'+head+'</thead><tbody>'+(bodyRows||'<tr><td colspan="99" class="note">회신 필요한 샘플이 없습니다.</td></tr>')+'</tbody></table></div>'+
-      '<div class="sv-how">회신 방법: <code>'+cids.map(esc).join("</code> · <code>")+'</code> 통제번호 폴더 → 파일명 <code>통제번호_샘플번호</code> (예: <code>'+esc(cids[0]||"")+'_'+esc((g.rows[0]&&g.rows[0].s.sample)||"01")+(g.evCols.length>1?'_'+esc(g.evCols[0].name.replace(/\s+/g,"")):'')+'.pdf</code>) → 폴더 전체 압축해 요청 메일에 회신'+(g.ctls.length>1?' · 같은 샘플이라 한 번에 준비하면 됩니다':'')+'</div>';
+      '</div>';
 }
 $("sv-cyc").onchange=function(){ renderSv(); };
 $("sv-open").onchange=function(){ renderSv(); };
@@ -746,7 +768,7 @@ function openSvModal(k){
   var m=$("sv-modal"); if(!m) return;
   $("svm-title").textContent=(p?p.names:"")+" · 샘플 증빙 요청";
   $("svm-sub").textContent=(p?p.site+" "+p.dept+" · ":"")+"증빙 "+st.total+"건 중 수취 "+st.done+"건"+(st.total-st.done?" · 회신 필요 "+(st.total-st.done)+"건":" · 완료");
-  $("svm-body").innerHTML='<div class="guide">감사인이 선정한 샘플입니다. 표 오른쪽 <b>회신 필요</b> 증빙을 준비해 <b>통제번호 폴더</b>별로 담고, 파일명은 <b>통제번호_샘플번호</b>(증빙이 여러 개면 뒤에 _증빙명)로 저장한 뒤 <b>폴더 전체를 압축</b>해 요청 메일에 회신해 주세요. 회계팀 확인 후 <b>수취</b>로 바뀝니다.</div>'+
+  $("svm-body").innerHTML='<div class="guide">감사인이 선정한 샘플입니다. 표 오른쪽 <b>회신 필요</b> 증빙을 아래 방법으로 보내 주세요. 회계팀 확인 후 <b>수취</b>로 바뀝니다.</div>'+svRuleHtml("")+
     (gs.length? gs.map(function(g){ return svGroupHtml(g, $("svm-open").checked); }).join("") : '<div class="empty">요청된 샘플이 없습니다.</div>');
   m.hidden=false; m.dataset.k=k; document.body.style.overflow="hidden";
   setTimeout(function(){ try{ $("svm-close").focus(); }catch(e){} }, 0);
