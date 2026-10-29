@@ -317,7 +317,7 @@
       </section>
     </div>
 
-    <section class="panel" id="pop-panel">
+    <section class="panel" id="pop-panel" hidden>
       <h2>모집단 요청 <span class="hint" id="pop-hint">샘플은 모집단 제출 후 감사인이 선정 · 담당자에게 먼저 요청</span></h2>
       <div class="toolbar">
         <label class="note" style="display:flex;gap:5px;align-items:center" for="pop-open"><input type="checkbox" id="pop-open" checked> 제출완료 제외</label>
@@ -666,7 +666,7 @@ function popList(){
     .sort(function(a,b){ return noKey(a.no).localeCompare(noKey(b.no)); });
 }
 function popReq(r){ return String(r.req||"").replace(/^\s*\(모집단\)\s*/,""); }
-function renderPop(){
+function renderPop(){ $("pop-panel").hidden=true; return;
   var focusOn=!!(filt.person||filt.dept); $("pop-panel").hidden=focusOn; if(focusOn) return;
   var list=popList(), tb=document.querySelector("#pop-table tbody"), em=$("pop-empty");
   var all=items.filter(inRound).filter(isPop), done=all.filter(function(r){return r.status==="제출완료";}).length;
@@ -705,7 +705,7 @@ function svGroups(){
   var bySig={};
   Object.keys(byCid).sort().forEach(function(cid){
     var list=byCid[cid].slice().sort(function(a,b){ return sKey(a.sample).localeCompare(sKey(b.sample)); });
-    var k=svSig(list); (bySig[k]=bySig[k]||[]).push({cid:cid, list:list});
+    var k=cid; (bySig[k]=bySig[k]||[]).push({cid:cid, list:list});
   });
   return Object.keys(bySig).map(function(k){
     var ctls=bySig[k], base=ctls[0].list, m0=rcm(ctls[0].cid);
