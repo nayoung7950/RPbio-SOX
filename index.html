@@ -720,8 +720,7 @@ function svGroupHtml(g, onlyOpen){
       '<div class="sv-req">요청 증빙: '+g.reqs.map(esc).join(" / ")+'</div>'+
       '<div class="sv-prog">증빙 '+tot+'건 중 수취 '+done+'건'+(tot-done?' · <span style="color:var(--critical)">회신 필요 '+(tot-done)+'건</span>':' · 완료')+'</div></div>'+
       '<div class="sv-wrap"><table class="sv"><thead>'+head+'</thead><tbody>'+(bodyRows||'<tr><td colspan="99" class="note">회신 필요한 샘플이 없습니다.</td></tr>')+'</tbody></table></div>'+
-      '<div class="sv-how">회신 방법: 공유 폴더(50. 운영평가 1차)에 <code>'+cids.map(esc).join("</code> · <code>")+'</code> 통제번호 폴더 → 파일명 <code>샘플번호_증빙명</code> (예: <code>'+esc((g.rows[0]&&g.rows[0].s.sample)||"01")+'_'+esc((g.evCols[0]&&g.evCols[0].name.replace(/\s+/g,""))||"증빙")+'.pdf</code>)'+(g.ctls.length>1?' · 같은 샘플이라 한 번에 준비하면 됩니다':'')+'</div>'+
-    '</div>';
+      '<div class="sv-how">회신 방법: <code>'+cids.map(esc).join("</code> · <code>")+'</code> 통제번호 폴더 → 파일명 <code>통제번호_샘플번호</code> (예: <code>'+esc(cids[0]||"")+'_'+esc((g.rows[0]&&g.rows[0].s.sample)||"01")+(g.evCols.length>1?'_'+esc(g.evCols[0].name.replace(/\s+/g,"")):'')+'.pdf</code>) → 폴더 전체 압축해 요청 메일에 회신'+(g.ctls.length>1?' · 같은 샘플이라 한 번에 준비하면 됩니다':'')+'</div>';
 }
 $("sv-cyc").onchange=function(){ renderSv(); };
 $("sv-open").onchange=function(){ renderSv(); };
@@ -747,7 +746,7 @@ function openSvModal(k){
   var m=$("sv-modal"); if(!m) return;
   $("svm-title").textContent=(p?p.names:"")+" · 샘플 증빙 요청";
   $("svm-sub").textContent=(p?p.site+" "+p.dept+" · ":"")+"증빙 "+st.total+"건 중 수취 "+st.done+"건"+(st.total-st.done?" · 회신 필요 "+(st.total-st.done)+"건":" · 완료");
-  $("svm-body").innerHTML='<div class="guide">감사인이 선정한 샘플입니다. 표 오른쪽 <b>회신 필요</b> 증빙을 준비해 공유 폴더(50. 운영평가 1차)의 <b>통제번호 폴더</b>에 <b>샘플번호_증빙명</b>으로 올려 주세요. 업로드가 확인되면 <b>수취</b>로 바뀝니다.</div>'+
+  $("svm-body").innerHTML='<div class="guide">감사인이 선정한 샘플입니다. 표 오른쪽 <b>회신 필요</b> 증빙을 준비해 <b>통제번호 폴더</b>별로 담고, 파일명은 <b>통제번호_샘플번호</b>(증빙이 여러 개면 뒤에 _증빙명)로 저장한 뒤 <b>폴더 전체를 압축</b>해 요청 메일에 회신해 주세요. 회계팀 확인 후 <b>수취</b>로 바뀝니다.</div>'+
     (gs.length? gs.map(function(g){ return svGroupHtml(g, $("svm-open").checked); }).join("") : '<div class="empty">요청된 샘플이 없습니다.</div>');
   m.hidden=false; m.dataset.k=k; document.body.style.overflow="hidden";
   setTimeout(function(){ try{ $("svm-close").focus(); }catch(e){} }, 0);
