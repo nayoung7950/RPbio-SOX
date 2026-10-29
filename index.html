@@ -196,32 +196,49 @@
   #ctl-table input[value=""], #pop-table input[value=""]{ visibility:hidden; }
 
 /* ---- 샘플 증빙 요청 (감사인 샘플 시트형) ---- */
-#sv-panel .sv-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 12px; }
-#sv-panel .sv-group{ border:1px solid var(--rule); border-radius:4px; margin:0 0 18px; background:var(--card); }
-#sv-panel .sv-head{ padding:12px 14px 10px; border-bottom:1px solid var(--rule); display:grid; gap:4px; }
-#sv-panel .sv-title{ font-size:15px; font-weight:700; color:var(--ink); }
-#sv-panel .sv-title .mono{ font-weight:400; color:var(--accent); margin-right:6px; }
-#sv-panel .sv-meta{ font-size:12.5px; color:var(--ink-muted); line-height:1.6; }
-#sv-panel .sv-meta b{ color:var(--ink); font-weight:600; }
-#sv-panel .sv-req{ font-size:13px; color:var(--ink); background:var(--accent-soft); border-left:3px solid var(--accent); padding:6px 10px; border-radius:2px; }
-#sv-panel .sv-prog{ font-size:12px; color:var(--ink-muted); }
-#sv-panel .sv-wrap{ overflow:auto; max-height:560px; }
-#sv-panel table.sv{ border-collapse:separate; border-spacing:0; width:100%; font-size:12.5px; }
-#sv-panel table.sv th{ position:sticky; top:0; z-index:1; background:var(--surface); color:var(--ink); font-weight:600; text-align:left; white-space:nowrap; padding:7px 9px; border-bottom:1px solid var(--rule-strong); }
-#sv-panel table.sv th.ev{ background:var(--accent-soft); color:var(--accent); }
-#sv-panel table.sv td{ padding:6px 9px; border-bottom:1px solid var(--rule); vertical-align:top; color:var(--ink); }
-#sv-panel table.sv tr:nth-child(even) td{ background:var(--surface); }
-#sv-panel table.sv td.no{ font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--accent); font-weight:700; white-space:nowrap; }
-#sv-panel table.sv td.n{ text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
-#sv-panel table.sv td.w{ white-space:nowrap; }
-#sv-panel table.sv td.t{ min-width:160px; }
-#sv-panel .sv-st{ display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:10px; white-space:nowrap; }
-#sv-panel .sv-st.ok{ color:var(--good); background:var(--good-bg); }
-#sv-panel .sv-st.no{ color:var(--critical); background:var(--critical-bg); }
-#sv-panel .sv-st.ng{ color:var(--warning); background:var(--warning-bg); }
-#sv-panel .sv-how{ font-size:12px; color:var(--ink-muted); padding:8px 14px 12px; border-top:1px solid var(--rule); }
-#sv-panel .sv-how code{ font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--ink); background:var(--surface); padding:0 4px; border-radius:2px; }
-@media (max-width:640px){ #sv-panel .sv-wrap{ max-height:none; } }
+:is(#sv-panel,#sv-modal) .sv-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 12px; }
+:is(#sv-panel,#sv-modal) .sv-group{ border:1px solid var(--rule); border-radius:4px; margin:0 0 18px; background:var(--card); }
+:is(#sv-panel,#sv-modal) .sv-head{ padding:12px 14px 10px; border-bottom:1px solid var(--rule); display:grid; gap:4px; }
+:is(#sv-panel,#sv-modal) .sv-title{ font-size:15px; font-weight:700; color:var(--ink); }
+:is(#sv-panel,#sv-modal) .sv-title .mono{ font-weight:400; color:var(--accent); margin-right:6px; }
+:is(#sv-panel,#sv-modal) .sv-meta{ font-size:12.5px; color:var(--ink-muted); line-height:1.6; }
+:is(#sv-panel,#sv-modal) .sv-meta b{ color:var(--ink); font-weight:600; }
+:is(#sv-panel,#sv-modal) .sv-req{ font-size:13px; color:var(--ink); background:var(--accent-soft); border-left:3px solid var(--accent); padding:6px 10px; border-radius:2px; }
+:is(#sv-panel,#sv-modal) .sv-prog{ font-size:12px; color:var(--ink-muted); }
+:is(#sv-panel,#sv-modal) .sv-wrap{ overflow:auto; max-height:560px; }
+:is(#sv-panel,#sv-modal) table.sv{ border-collapse:separate; border-spacing:0; width:100%; font-size:12.5px; }
+:is(#sv-panel,#sv-modal) table.sv th{ position:sticky; top:0; z-index:1; background:var(--surface); color:var(--ink); font-weight:600; text-align:left; white-space:nowrap; padding:7px 9px; border-bottom:1px solid var(--rule-strong); }
+:is(#sv-panel,#sv-modal) table.sv th.ev{ background:var(--accent-soft); color:var(--accent); }
+:is(#sv-panel,#sv-modal) table.sv td{ padding:6px 9px; border-bottom:1px solid var(--rule); vertical-align:top; color:var(--ink); }
+:is(#sv-panel,#sv-modal) table.sv tr:nth-child(even) td{ background:var(--surface); }
+:is(#sv-panel,#sv-modal) table.sv td.no{ font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--accent); font-weight:700; white-space:nowrap; }
+:is(#sv-panel,#sv-modal) table.sv td.n{ text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+:is(#sv-panel,#sv-modal) table.sv td.w{ white-space:nowrap; }
+:is(#sv-panel,#sv-modal) table.sv td.t{ min-width:160px; }
+:is(#sv-panel,#sv-modal) .sv-st{ display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:10px; white-space:nowrap; }
+:is(#sv-panel,#sv-modal) .sv-st.ok{ color:var(--good); background:var(--good-bg); }
+:is(#sv-panel,#sv-modal) .sv-st.no{ color:var(--critical); background:var(--critical-bg); }
+:is(#sv-panel,#sv-modal) .sv-st.ng{ color:var(--warning); background:var(--warning-bg); }
+:is(#sv-panel,#sv-modal) .sv-how{ font-size:12px; color:var(--ink-muted); padding:8px 14px 12px; border-top:1px solid var(--rule); }
+:is(#sv-panel,#sv-modal) .sv-how code{ font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--ink); background:var(--surface); padding:0 4px; border-radius:2px; }
+@media (max-width:640px){ :is(#sv-panel,#sv-modal) .sv-wrap{ max-height:none; } }
+/* ---- 담당자별 샘플 증빙 (이름 옆 칩 + 팝업) ---- */
+.prow .nm.hasv{ white-space:normal; }
+.prow .svchip{ display:block; width:fit-content; margin:3px 0 0; font-size:11.5px; padding:1px 8px; border-radius:10px; border:1px solid var(--critical); color:var(--critical); background:var(--critical-bg); cursor:pointer; vertical-align:1px; white-space:nowrap; }
+.prow .svchip.done{ border-color:var(--good); color:var(--good); background:var(--good-bg); }
+.prow .svchip:hover, .prow .svchip:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
+#sv-modal{ position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.45); display:flex; align-items:flex-start; justify-content:center; padding:24px 16px; overflow:auto; }
+#sv-modal[hidden]{ display:none !important; }
+#sv-modal .box{ background:var(--plane); color:var(--ink); width:min(1280px,100%); border-radius:6px; box-shadow:0 12px 40px rgba(0,0,0,.3); }
+#sv-modal .mh{ position:sticky; top:0; z-index:2; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; padding:14px 18px; background:var(--card); border-bottom:1px solid var(--rule); border-radius:6px 6px 0 0; }
+#sv-modal .mh h3{ margin:0; font-size:17px; }
+#sv-modal .mh .sub{ font-size:12.5px; color:var(--ink-muted); }
+#sv-modal .mh .x{ margin-left:auto; }
+#sv-modal .mb{ padding:16px 18px 6px; }
+#sv-modal .guide{ font-size:13px; line-height:1.7; background:var(--card); border:1px solid var(--rule); border-radius:4px; padding:10px 14px; margin:0 0 16px; }
+#sv-modal .guide b{ color:var(--accent); }
+#sv-modal .sv-wrap{ max-height:none; }
+
 </style>
 
 <div class="wrap">
@@ -475,8 +492,10 @@ function renderPeople(stats){
   if(!keys.length){ el.innerHTML='<div class="empty">감사인 리스트를 올리면 담당자별 진행이 표시됩니다.</div>'; return; }
   el.innerHTML=keys.map(function(k){
     var x=pp[k], p=person(k), pc=Math.round(x.done/x.total*100);
-    return '<button class="prow" data-k="'+esc(k)+'" aria-pressed="'+(filt.person===k)+'"><span class="nm">'+(p?esc(p.names)+' <span class="ds"><span style="color:'+SITE_VAR[p.site]+'">'+esc(p.site)+'</span> · '+esc(p.dept)+'</span>':'담당자 미지정')+'</span>'+barHtml(x.done,x.issues,x.total)+'<span class="pc">'+pc+'% · '+x.done+'/'+x.total+'</span><span class="is">'+(x.issues?'이슈 '+x.issues:'')+'</span></button>';
+    var sv=svPersonStat(k), chip=sv.total?'<span class="svchip'+(sv.total===sv.done?' done':'')+'" role="button" tabindex="0" data-sv="'+esc(k)+'" title="샘플 증빙 보기">샘플 증빙 '+(sv.total===sv.done?'완료':'회신 '+(sv.total-sv.done)+'건')+'</span>':'';
+    return '<button class="prow" data-k="'+esc(k)+'" aria-pressed="'+(filt.person===k)+'"><span class="nm'+(chip?' hasv':'')+'">'+(p?esc(p.names)+' <span class="ds"><span style="color:'+SITE_VAR[p.site]+'">'+esc(p.site)+'</span> · '+esc(p.dept)+'</span>':'담당자 미지정')+chip+'</span>'+barHtml(x.done,x.issues,x.total)+'<span class="pc">'+pc+'% · '+x.done+'/'+x.total+'</span><span class="is">'+(x.issues?'이슈 '+x.issues:'')+'</span></button>';
   }).join("");
+  el.querySelectorAll(".svchip").forEach(function(c){ c.onclick=function(e){ e.stopPropagation(); e.preventDefault(); openSvModal(c.dataset.sv); }; c.onkeydown=function(e){ if(e.key==="Enter"||e.key===" "){ e.stopPropagation(); e.preventDefault(); openSvModal(c.dataset.sv); } }; });
   el.querySelectorAll(".prow").forEach(function(b){ b.onclick=function(){ var k=b.dataset.k; if(k==="_none") return; filt.person = filt.person===k?"":k; filt.dept=""; renderAll(); goCtl(); }; });
 }
 function renderDepts(stats){
@@ -682,10 +701,13 @@ function renderSv(){
   if(cur && !cs[cur]) sel.value="";
   var onlyOpen=$("sv-open").checked, nS=0, nOpen=0;
   var vis=all.filter(svVisible);
-  body.innerHTML = vis.length ? vis.map(function(g){
+  vis.forEach(function(g){ nS+=g.rows.length; nOpen+=g.rows.filter(function(r){ return r.cells.some(function(st){ return st && st!=="수취"; }); }).length; });
+  body.innerHTML = vis.length ? vis.map(function(g){ return svGroupHtml(g, onlyOpen); }).join("") : '<div class="empty">선택한 조건에 해당하는 샘플이 없습니다.</div>';
+  $("sv-count").textContent="샘플 "+nS+"건 · 회신 필요 "+nOpen+"건";
+}
+function svGroupHtml(g, onlyOpen){
     var rows=g.rows.filter(function(r){ return !onlyOpen || r.cells.some(function(st){ return st && st!=="수취"; }); });
     var tot=0, done=0; g.rows.forEach(function(r){ r.cells.forEach(function(st){ if(st){ tot++; if(st==="수취") done++; } }); });
-    nS+=g.rows.length; nOpen+=g.rows.filter(function(r){ return r.cells.some(function(st){ return st && st!=="수취"; }); }).length;
     var sh=g.sheet||{h:[],v:[],num:[]}, numIdx=sh.num||[];
     var head='<tr><th>샘플</th>'+sh.h.map(function(h){ return '<th>'+esc(h)+'</th>'; }).join("")+g.evCols.map(function(ec){ return '<th class="ev" title="'+esc(ec.cid)+'">'+esc(ec.name)+(g.ctls.length>1?'<br><span style="font-weight:400;font-size:11px">'+esc(ec.cid.replace(/^C-/,""))+'</span>':'')+'</th>'; }).join("")+'</tr>';
     var bodyRows=rows.map(function(r){ var v=(r.s.sheet&&r.s.sheet.v)||[];
@@ -700,11 +722,49 @@ function renderSv(){
       '<div class="sv-wrap"><table class="sv"><thead>'+head+'</thead><tbody>'+(bodyRows||'<tr><td colspan="99" class="note">회신 필요한 샘플이 없습니다.</td></tr>')+'</tbody></table></div>'+
       '<div class="sv-how">회신 방법: 공유 폴더(50. 운영평가 1차)에 <code>'+cids.map(esc).join("</code> · <code>")+'</code> 통제번호 폴더 → 파일명 <code>샘플번호_증빙명</code> (예: <code>'+esc((g.rows[0]&&g.rows[0].s.sample)||"01")+'_'+esc((g.evCols[0]&&g.evCols[0].name.replace(/\s+/g,""))||"증빙")+'.pdf</code>)'+(g.ctls.length>1?' · 같은 샘플이라 한 번에 준비하면 됩니다':'')+'</div>'+
     '</div>';
-  }).join("") : '<div class="empty">선택한 조건에 해당하는 샘플이 없습니다.</div>';
-  $("sv-count").textContent="샘플 "+nS+"건 · 회신 필요 "+nOpen+"건";
 }
 $("sv-cyc").onchange=function(){ renderSv(); };
 $("sv-open").onchange=function(){ renderSv(); };
+
+/* ---- 담당자별 샘플 증빙: 이름 옆 칩 + 팝업 ---- */
+function svPersonGroups(k){
+  return svGroups().map(function(g){
+    var own=g.ctls.filter(function(c){ var m=rcm(c.cid); return m && m.ppl.indexOf(k)>-1; }).map(function(c){ return c.cid; });
+    if(!own.length) return null;
+    var idx=[]; g.evCols.forEach(function(ec,i){ if(own.indexOf(ec.cid)>-1) idx.push(i); });
+    var ctls=g.ctls.filter(function(c){ return own.indexOf(c.cid)>-1; });
+    var names=[], reqs=[]; g.ctls.forEach(function(c,i){ if(own.indexOf(c.cid)>-1){ names.push(g.names[i]); reqs.push(g.reqs[i]); } });
+    return Object.assign({}, g, {ctls:ctls, names:names, reqs:reqs, ppl:[k], evCols:idx.map(function(i){ return g.evCols[i]; }),
+      rows:g.rows.map(function(r){ return {s:r.s, cells:idx.map(function(i){ return r.cells[i]; })}; })});
+  }).filter(Boolean);
+}
+function svPersonStat(k){
+  var t=0, d=0; svPersonGroups(k).forEach(function(g){ g.rows.forEach(function(r){ r.cells.forEach(function(st){ if(st){ t++; if(st==="수취") d++; } }); }); });
+  return {total:t, done:d};
+}
+function openSvModal(k){
+  var p=person(k), gs=svPersonGroups(k), st=svPersonStat(k);
+  var m=$("sv-modal"); if(!m) return;
+  $("svm-title").textContent=(p?p.names:"")+" · 샘플 증빙 요청";
+  $("svm-sub").textContent=(p?p.site+" "+p.dept+" · ":"")+"증빙 "+st.total+"건 중 수취 "+st.done+"건"+(st.total-st.done?" · 회신 필요 "+(st.total-st.done)+"건":" · 완료");
+  $("svm-body").innerHTML='<div class="guide">감사인이 선정한 샘플입니다. 표 오른쪽 <b>회신 필요</b> 증빙을 준비해 공유 폴더(50. 운영평가 1차)의 <b>통제번호 폴더</b>에 <b>샘플번호_증빙명</b>으로 올려 주세요. 업로드가 확인되면 <b>수취</b>로 바뀝니다.</div>'+
+    (gs.length? gs.map(function(g){ return svGroupHtml(g, $("svm-open").checked); }).join("") : '<div class="empty">요청된 샘플이 없습니다.</div>');
+  m.hidden=false; m.dataset.k=k; document.body.style.overflow="hidden";
+  setTimeout(function(){ try{ $("svm-close").focus(); }catch(e){} }, 0);
+}
+function closeSvModal(){ var m=$("sv-modal"); if(!m||m.hidden) return; m.hidden=true; document.body.style.overflow=""; var b=document.querySelector('.prow[data-k="'+(m.dataset.k||"")+'"] .svchip'); if(b) try{ b.focus(); }catch(e){} }
+(function(){
+  var d=document.createElement("div"); d.id="sv-modal"; d.hidden=true; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-labelledby","svm-title");
+  d.innerHTML='<div class="box"><div class="mh"><div><h3 id="svm-title"></h3><div class="sub" id="svm-sub"></div></div>'+
+    '<label class="note" for="svm-open" style="display:flex;gap:5px;align-items:center"><input type="checkbox" id="svm-open"> 회신 필요 샘플만</label>'+
+    '<button class="btn x" id="svm-close" aria-label="닫기">닫기 ✕</button></div><div class="mb" id="svm-body"></div></div>';
+  document.body.appendChild(d);
+  d.addEventListener("click", function(e){ if(e.target===d) closeSvModal(); });
+  $("svm-close").onclick=closeSvModal;
+  $("svm-open").onchange=function(){ if(!d.hidden) openSvModal(d.dataset.k); };
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeSvModal(); });
+})();
+
 
 $("btn-pop-copy").onclick=function(){
   var list=popList();
