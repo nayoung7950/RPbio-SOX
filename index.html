@@ -499,11 +499,34 @@ function renderKpis(stats){
     '<button class="kpi bad" id="kpi-iss" aria-pressed="'+filt.issues+'"><span class="l">이슈</span><span class="v">'+iss+'</span><span class="s">누락·불일치·추가요청·기한경과'+(late?' (경과 '+late+')':'')+'</span></button>';
   $("kpi-iss").onclick=function(){ filt.issues=!filt.issues; renderAll(); };
 }
+/* 샘플별 사업장(향남·마도) — 미수령 메일은 해당 사업장 담당자에게만 */
+var SITE_RULE={
+  "C-CO-30-01-01":{def:"마도", "08":"향남","19":"향남"},           /* 의약품(벤포벨·하노마린)=향남, 건식=마도 */
+  "C-CO-70-01-01":{def:"마도", "05":"향남","10":"향남"},           /* OTC 의약품 반품=향남 */
+  "C-CO-70-02-01":{def:"마도", "01":"향남","03":"향남","07":"향남"} /* 물류_의약·제약/OTC영업=향남, 마도건식·건식영업=마도 */
+};
+var PBC_SITE={"3-3-1":"마도"}; /* 향남분 수취(26.11.20) — 마도분만 남음 */
+function sampleSite(s){
+  var h=(s.sheet&&s.sheet.h)||[], v=(s.sheet&&s.sheet.v)||[], i=h.indexOf("사업장");
+  if(i>-1){ var t=String(v[i]||""); if(t.indexOf("향남")>-1) return "향남"; if(t.indexOf("마도")>-1) return "마도"; }
+  if(s.cid==="C-CO-20-01-03"){ var j=h.indexOf("대분류"); if(j>-1){ var t2=String(v[j]||""); return /^의약/.test(t2)?"향남":"마도"; } }
+  var r=(typeof SITE_RULE==="object"&&SITE_RULE)?SITE_RULE[s.cid]:null; if(r) return r[s.sample]||r.def;
+  return "";
+}
+/* 담당자 사업장 기준 집계: 향남 담당자는 향남 샘플만, 마도 담당자는 마도 샘플만 */
+function inScopeS(s, k){ var p=PEOPLE[k]; if(!p || p[0]==="본사") return true; var st=sampleSite(s); return !st || st===p[0]; }
+function inScopeI(r, k){ var p=PEOPLE[k]; var ps=(typeof PBC_SITE==="object"&&PBC_SITE)?PBC_SITE[r.no]:""; if(!p || !ps || p[0]==="본사") return true; return ps===p[0]; }
+function ctlStatFor(c, k){
+  var x={done:0,total:0,issues:0};
+  c.items.forEach(function(r){ if(r.status==="대기" || !inScopeI(r,k)) return; x.total++; if(r.status==="제출완료") x.done++; else if(r.status==="추가요청" || (daysTo(r.due)!=null && daysTo(r.due)<0)) x.issues++; });
+  c.samples.forEach(function(s){ if(!inScopeS(s,k)) return; (s.ev||[]).forEach(function(e){ x.total++; if(e.st==="수취") x.done++; else if(e.st!=="미수취") x.issues++; }); });
+  return x;
+}
 function renderPeople(stats){
   var pp={};
   stats.forEach(function(c){
     var keys=c.ppl.length?c.ppl:["_none"];
-    keys.forEach(function(k){ var x=pp[k]=pp[k]||{done:0,total:0,issues:0,ctl:0}; x.done+=c.done; x.total+=c.total; x.issues+=c.issues; x.ctl++; });
+    keys.forEach(function(k){ var x=pp[k]=pp[k]||{done:0,total:0,issues:0,ctl:0}; var y=k==="_none"?c:ctlStatFor(c,k); x.done+=y.done; x.total+=y.total; x.issues+=y.issues; x.ctl++; });
   });
   var keys=Object.keys(pp).filter(function(k){ return pp[k].total && (!filt.site || (PEOPLE[k]&&PEOPLE[k][0]===filt.site)); })
     .sort(function(a,b){ return (pp[b].total-pp[b].done)-(pp[a].total-pp[a].done) || pp[b].issues-pp[a].issues; });
@@ -522,7 +545,7 @@ function renderDepts(stats){
   stats.forEach(function(c){
     var seen={};
     c.ppl.forEach(function(k){ var p=PEOPLE[k]; if(!p) return; var key=p[0]+"|"+p[1]; if(seen[key]) return; seen[key]=1;
-      var x=dd[key]=dd[key]||{site:p[0],dept:p[1],done:0,total:0,issues:0}; x.done+=c.done; x.total+=c.total; x.issues+=c.issues; });
+      var x=dd[key]=dd[key]||{site:p[0],dept:p[1],done:0,total:0,issues:0}; var y=ctlStatFor(c,k); x.done+=y.done; x.total+=y.total; x.issues+=y.issues; });
   });
   var el=$("by-dept"), html=[];
   ["본사","향남","마도"].forEach(function(site){
@@ -773,7 +796,7 @@ function svPersonGroups(k){
     var ctls=g.ctls.filter(function(c){ return own.indexOf(c.cid)>-1; });
     var names=[], reqs=[]; g.ctls.forEach(function(c,i){ if(own.indexOf(c.cid)>-1){ names.push(g.names[i]); reqs.push(g.reqs[i]); } });
     return Object.assign({}, g, {ctls:ctls, names:names, reqs:reqs, ppl:[k], evCols:idx.map(function(i){ return g.evCols[i]; }),
-      rows:g.rows.map(function(r){ return {s:r.s, cells:idx.map(function(i){ return r.cells[i]; })}; })});
+      rows:g.rows.filter(function(r){ return inScopeS(r.s,k); }).map(function(r){ return {s:r.s, cells:idx.map(function(i){ return r.cells[i]; })}; })});
   }).filter(Boolean);
 }
 function svPersonStat(k){
