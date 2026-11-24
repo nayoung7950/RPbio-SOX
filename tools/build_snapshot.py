@@ -17,10 +17,11 @@ src, stamp = pathlib.Path(sys.argv[1]), sys.argv[2]
 PUBLIC_FIELDS = {
     "pbc": {"cid", "cname", "dept", "due", "no", "period", "req", "reqDate",
             "round", "status", "updated", "checkResult", "checkReason"},
-    # 2026-10-29 사용자 결정: 현업 증빙 요청용으로 샘플 시트(거래처·금액·전표번호) 공개. 비고(note)는 비공개.
+    # 2026-10-29 사용자 결정: 현업 증빙 요청용으로 샘플 시트(거래처·금액·전표번호) 공개.
+    # 2026-11-24 사용자 결정: 샘플 비고(note)도 공개 — 담당자가 확인 필요 사항을 직접 보도록.
     "samples": {"cid", "cname", "round", "due", "ev", "status", "updated",
                 "checkResult", "checkReason", "sample", "amount", "date", "desc",
-                "sheet", "req", "pop", "popDesc"},
+                "sheet", "req", "pop", "popDesc", "note"},
 }
 MASK = {}
 
